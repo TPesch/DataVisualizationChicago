@@ -38,6 +38,7 @@
 
 <body>
     <h1>The Wonderful City of Chicago</h1>
+    <h2>If map is partially grey'd out please press F12</h2>
     <div id="loading">
         <img src="markers/raccoon spin.gif" alt="Loading..." />
     </div>
@@ -111,7 +112,7 @@
                     }
                 });
 
-                function plotCSVData(csvData, type, callback) {
+                function plotCSVData(csvData, type, clusterGroup, callback) {
                     Papa.parse(csvData, {
                         header: true,
                         complete: function (results) {
@@ -128,21 +129,20 @@
                                     var popupContent = '<strong>Type:</strong> ' + type + '<br>';
 
                                     if (type === 'Car Crash') {
-                                        // popupContent += '<strong>Date:</strong> ' + row['date'] + '<br>';
                                         popupContent += '<strong>Town:</strong> ' + row['town'] + '<br>';
                                         popupContent += '<strong>Number Injured:</strong> ' + row['total_injured'];
                                         popupContent += '<br><strong>Number Killed:</strong> ' + row['total_killed'];
                                         popupContent += '<br><strong> Reason for crash:</strong> ' + row['contributory_cause'];
-                                        carCrashCluster.addLayer(marker);
+                                        clusterGroup.addLayer(marker);
                                     } else if (type === 'Gun Violence') {
                                         popupContent += '<strong>Date:</strong> ' + row['date'] + '<br>';
                                         popupContent += '<strong>Address:</strong> ' + row['address'] + '<br>';
                                         popupContent += '<strong>Number Killed:</strong> ' + row['n_killed'] + '<br>';
                                         popupContent += '<strong>Number Injured:</strong> ' + row['n_injured'];
-                                        gunViolenceCluster.addLayer(marker);
+                                        clusterGroup.addLayer(marker);
                                     } else if (type === 'Bike Rack') {
                                         popupContent += '<strong>Address:</strong> ' + row['Address'];
-                                        bikeRackCluster.addLayer(marker);
+                                        clusterGroup.addLayer(marker);
                                     }
 
                                     marker.bindPopup(popupContent);
@@ -164,8 +164,11 @@
                 function checkAllFilesLoaded() {
                     filesLoaded++;
                     if (filesLoaded === 3) {
-                        document.getElementById('loading').style.display = 'none';
-                        document.getElementById('map').style.display = 'block';
+                        setTimeout(function () {
+                            map.invalidateSize();
+                            document.getElementById('loading').style.display = 'none';
+                            document.getElementById('map').style.display = 'block';
+                        }, 500);  // Adding a small delay to ensure all rendering is complete
                     }
                 }
 
@@ -174,7 +177,7 @@
                         return response.text();
                     })
                     .then(function (csvText) {
-                        plotCSVData(csvText, 'Bike Rack', checkAllFilesLoaded);
+                        plotCSVData(csvText, 'Bike Rack', bikeRackCluster, checkAllFilesLoaded);
                     })
                     .catch(function (error) {
                         console.log("Error loading Bike Racks CSV file:", error);
@@ -185,7 +188,7 @@
                         return response.text();
                     })
                     .then(function (csvText) {
-                        plotCSVData(csvText, 'Gun Violence', checkAllFilesLoaded);
+                        plotCSVData(csvText, 'Gun Violence', gunViolenceCluster, checkAllFilesLoaded);
                     })
                     .catch(function (error) {
                         console.log("Error loading Gun Violence CSV file:", error);
@@ -196,7 +199,7 @@
                         return response.text();
                     })
                     .then(function (csvText) {
-                        plotCSVData(csvText, 'Car Crash', checkAllFilesLoaded);
+                        plotCSVData(csvText, 'Car Crash', carCrashCluster, checkAllFilesLoaded);
                     })
                     .catch(function (error) {
                         console.log("Error loading Car Crash CSV file:", error);

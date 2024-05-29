@@ -66,5 +66,5 @@ This project visualizes CSV data on a map using Leaflet and D3.js to create comp
 
 ## Accessing the Project
 
-You can access the project hosted on GitHub [here](https://tpesch.github.io/DataVisualizationChicago/map.html).
+You can access the project hosted on GitHub [here](https://tpesch.github.io/DataVisualizationChicago/index.html).
 

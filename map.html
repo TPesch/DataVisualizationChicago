@@ -23,16 +23,13 @@
     <link rel="stylesheet" href="style.css">
     <style>
         #map {
-            height: 600px;
             display: none;
         }
-
-        #loading {
-            display: flex;
+        #h2 {
+            
             justify-content: center;
-            align-items: center;
-            height: 100vh;
         }
+
     </style>
 </head>
 
@@ -168,7 +165,11 @@
                             map.invalidateSize();
                             document.getElementById('loading').style.display = 'none';
                             document.getElementById('map').style.display = 'block';
-                        }, 500);  // Adding a small delay to ensure all rendering is complete
+                            document.getElementById('map').style.width = '100%';
+                            document.getElementById('map').style.height = '600px';
+                        }, 1000);  // Adding a small delay to ensure all rendering is complete
+                    }
+                    else{
                     }
                 }
 

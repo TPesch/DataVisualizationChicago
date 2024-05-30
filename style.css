@@ -14,8 +14,15 @@ body {
 
 /* Style for the map container */
 #map {
-    height: 100%;
-    width: 100%;
+    height: 600px;
+    width: 600px;
+}
+
+#loading {
+    /* display: flex; */
+    /* justify-content: center; */
+    align-items: center;
+    /* height: 100vh; */
 }
 
 /* Optional: Add some padding around the h1 element */

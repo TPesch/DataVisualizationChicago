@@ -7,12 +7,11 @@
     <title>CSV Data on Map</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-
+    <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="">
         </script>
@@ -20,17 +19,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"
         integrity="sha512-dfX5uYVXzyU8+KHqj8bjo7UkOdg18PaOtpa48djpNbZHwExddghZ+ZmzWT06R5v6NSk3ZUfsH6FNEDepLx9hPQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        #map {
-            display: none;
-        }
-        #h2 {
-            
-            justify-content: center;
-        }
-
-    </style>
 </head>
 
 <body>
@@ -130,19 +118,17 @@
                                         popupContent += '<strong>Number Injured:</strong> ' + row['total_injured'];
                                         popupContent += '<br><strong>Number Killed:</strong> ' + row['total_killed'];
                                         popupContent += '<br><strong> Reason for crash:</strong> ' + row['contributory_cause'];
-                                        clusterGroup.addLayer(marker);
                                     } else if (type === 'Gun Violence') {
                                         popupContent += '<strong>Date:</strong> ' + row['date'] + '<br>';
                                         popupContent += '<strong>Address:</strong> ' + row['address'] + '<br>';
                                         popupContent += '<strong>Number Killed:</strong> ' + row['n_killed'] + '<br>';
                                         popupContent += '<strong>Number Injured:</strong> ' + row['n_injured'];
-                                        clusterGroup.addLayer(marker);
                                     } else if (type === 'Bike Rack') {
                                         popupContent += '<strong>Address:</strong> ' + row['Address'];
-                                        clusterGroup.addLayer(marker);
                                     }
 
                                     marker.bindPopup(popupContent);
+                                    clusterGroup.addLayer(marker);
                                 }
                             });
 
@@ -162,14 +148,17 @@
                     filesLoaded++;
                     if (filesLoaded === 3) {
                         setTimeout(function () {
-                            map.invalidateSize();
+                            var mapElement = document.getElementById('map');
+                            mapElement.style.display = 'block';
+                            mapElement.classList.add('grow');
+
+                            // Invalidate the map size after the transition completes
+                            setTimeout(function () {
+                                map.invalidateSize();
+                            }, 2000);  // Match this with the transition duration
+
                             document.getElementById('loading').style.display = 'none';
-                            document.getElementById('map').style.display = 'block';
-                            document.getElementById('map').style.width = '100%';
-                            document.getElementById('map').style.height = '600px';
                         }, 1000);  // Adding a small delay to ensure all rendering is complete
-                    }
-                    else{
                     }
                 }
 

@@ -145,7 +145,13 @@
                     .attr("width", x.bandwidth())
                     .attr("height", function (d) { return height - y(d); })
                     .attr("fill", color);
+
+                svg.append("text")
+                    .attr("transform", "translate(" + (width / 2 + margin.left) + " ," + (height + margin.top + 60) + ")")
+                    .style("text-anchor", "middle")
+                    .text("Chicago Wards");
             }
+            
 
             // Create individual charts
             createChart("#chart1", incidents, "Number of Gun Violence Incidents", "red");
@@ -222,6 +228,11 @@
                     .attr("width", x.bandwidth() / 2)
                     .attr("height", function (d) { return height - y2(d); })
                     .attr("fill", color2);
+
+                svg.append("text")
+                    .attr("transform", "translate(" + (width / 2 + margin.left) + " ," + (height + margin.top + 60) + ")")
+                    .style("text-anchor", "middle")
+                    .text("Chicago Wards");
             }
 
             createComparisonChart("#chart4", bikeRacks, "Number of Bike Racks", "green", carCrashes, "Number of Car Crashes", "blue");
@@ -322,9 +333,14 @@
                     .attr("width", x.bandwidth() / 3)
                     .attr("height", function (d) { return height - y3(d); })
                     .attr("fill", color3);
+
+                svg.append("text")
+                    .attr("transform", "translate(" + (width / 2 + margin.left) + " ," + (height + margin.top + 60) + ")")
+                    .style("text-anchor", "middle")
+                    .text("Chicago Wards");
             }
 
-            createTripleComparisonChart("#chart7", incidents, "Number of Gun Violence Incidents", "red", bikeRacks, "Number of Bike Racks", "green", carCrashes, "Number of Car Crashes", "blue");
+            createTripleComparisonChart("#chart7", incidents, "Number of Gun Violence Incidents", "red", bikeRacks, "Number of Bike Racks", "green", carCrashes, "Number of Car Crashes per 10 Crashes", "blue");
         }
     </script>
 </body>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Scatter Plots and Heatmap</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"
+        integrity="sha512-dfX5uYVXzyU8+KHqj8bjo7UkOdg18PaOtpa48djpNbZHwExddghZ+ZmzWT06R5v6NSk3ZUfsH6FNEDepLx9hPQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            width: auto;
+            height: auto;
+            padding: 5px;
+            font: 12px sans-serif;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Scatter Plots and Heatmap of Gun Violence, Bike Racks, and Car Crashes Per Chicago Ward</h2>
+    <button onclick="location.href='graphsChoice.html'">Go Back << </button>
+            <div id="scatter1"></div>
+            <div id="scatter2"></div>
+            <div id="scatter3"></div>
+            <div id="heatmap"></div>
+            <script src="scripts.js"></script>
+            <script>
+                var wardData = {};
+                var processedFiles = 0;
+                var bikeRacks = [], carCrashes = [], incidents = [];
+
+                function aggregateData(data, type) {
+                    data.forEach(function (row) {
+                        var ward = row['Ward'] || row['ward'];
+                        if (!wardData[ward]) {
+                            wardData[ward] = { incidents: 0, bikeRacks: 0, carCrashes: 0 };
+                        }
+                        if (type === 'Bike Rack') {
+                            wardData[ward].bikeRacks += 1;
+                        } else if (type === 'Gun Violence') {
+                            wardData[ward].incidents += 1;
+                        } else if (type === 'Car Crash') {
+                            wardData[ward].carCrashes += 1;
+                        }
+                    });
+
+                    processedFiles++;
+                    if (processedFiles === 3) {
+                        processDataArrays();
+                        createCharts();
+                    }
+                }
+
+                function processDataArrays() {
+                    for (var ward in wardData) {
+                        bikeRacks.push(wardData[ward].bikeRacks);
+                        carCrashes.push(wardData[ward].carCrashes);
+                        incidents.push(wardData[ward].incidents);
+                    }
+                }
+
+                function plotCSVData(csvData, type) {
+                    Papa.parse(csvData, {
+                        header: true,
+                        complete: function (results) {
+                            var data = results.data;
+                            aggregateData(data, type);
+                        }
+                    });
+                }
+
+                fetch("CSV/bike-racks.csv")
+                    .then(function (response) {
+                        return response.text();
+                    })
+                    .then(function (csvText) {
+                        plotCSVData(csvText, 'Bike Rack');
+                    })
+                    .catch(function (error) {
+                        console.log("Error loading Bike Racks CSV file:", error);
+                    });
+
+                fetch("CSV/Gun_Violence_Data_with_Wards.csv")
+                    .then(function (response) {
+                        return response.text();
+                    })
+                    .then(function (csvText) {
+                        plotCSVData(csvText, 'Gun Violence');
+                    })
+                    .catch(function (error) {
+                        console.log("Error loading Gun Violence CSV file:", error);
+                    });
+
+                fetch("CSV/Cleaned_Car_Crash_Data_2019.csv")
+                    .then(function (response) {
+                        return response.text();
+                    })
+                    .then(function (csvText) {
+                        plotCSVData(csvText, 'Car Crash');
+                    })
+                    .catch(function (error) {
+                        console.log("Error loading Car Crash CSV file:", error);
+                    });
+
+                function createScatterPlot(containerId, dataX, labelX, dataY, labelY, color) {
+                    var svg = d3.select(containerId).append("svg")
+                        .attr("width", 500)
+                        .attr("height", 500),
+                        margin = { top: 20, right: 50, bottom: 50, left: 100 },
+                        width = +svg.attr("width") - margin.left - margin.right,
+                        height = +svg.attr("height") - margin.top - margin.bottom,
+                        g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                    var x = d3.scaleLinear().range([0, width]);
+                    var y = d3.scaleLinear().range([height, 0]);
+
+                    x.domain([0, d3.max(dataX)]);
+                    y.domain([0, d3.max(dataY)]);
+
+                    g.append("g")
+                        .attr("transform", "translate(0," + height + ")")
+                        .call(d3.axisBottom(x))
+                        .append("text")
+                        .attr("x", width / 2)
+                        .attr("y", 40)
+                        .attr("fill", "#000")
+                        .text(labelX);
+
+                    g.append("g")
+                        .call(d3.axisLeft(y))
+                        .append("text")
+                        .attr("transform", "rotate(-90)")
+                        .attr("x", -height / 2)
+                        .attr("y", -80)
+                        .attr("fill", "#000")
+                        .style("text-anchor", "middle")
+                        .text(labelY);
+
+                    g.selectAll("circle")
+                        .data(dataX)
+                        .enter().append("circle")
+                        .attr("cx", function (d, i) { return x(d); })
+                        .attr("cy", function (d, i) { return y(dataY[i]); })
+                        .attr("r", 5)
+                        .attr("fill", color);
+                }
+
+                function createCharts() {
+                    createScatterPlot("#scatter1", bikeRacks, "Number of Bike Racks", carCrashes, "Number of Car Crashes", "blue");
+                    createScatterPlot("#scatter2", bikeRacks, "Number of Bike Racks", incidents, "Number of Gun Violence Incidents", "red");
+                    createScatterPlot("#scatter3", carCrashes, "Number of Car Crashes", incidents, "Number of Gun Violence Incidents", "green");
+                    createHeatmap("#heatmap");
+                }
+
+                function createHeatmap(containerId) {
+                    // set the dimensions and margins of the graph
+                    var margin = { top: 30, right: 30, bottom: 30, left: 100 },
+                        width = 450 - margin.left - margin.right,
+                        height = 450 - margin.top - margin.bottom;
+
+                    // append the svg object to the body of the page
+                    var svg = d3.select(containerId)
+                        .append("svg")
+                        .attr("width", width + margin.left + margin.right)
+                        .attr("height", height + margin.top + margin.bottom)
+                        .append("g")
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                    // Labels of row and columns
+                    var myGroups = ["Bike Racks", "Car Crashes", "Gun Violence"];
+                    var myVars = ["Bike Racks", "Car Crashes", "Gun Violence"];
+
+                    // Build X scales and axis
+                    var x = d3.scaleBand()
+                        .range([0, width])
+                        .domain(myGroups)
+                        .padding(0.01);
+                    svg.append("g")
+                        .attr("transform", "translate(0," + height + ")")
+                        .call(d3.axisBottom(x))
+
+                    // Build Y scales and axis
+                    var y = d3.scaleBand()
+                        .range([height, 0])
+                        .domain(myVars)
+                        .padding(0.01);
+                    svg.append("g")
+                        .call(d3.axisLeft(y));
+
+                    // Build color scale
+                    var myColor = d3.scaleLinear()
+                        .range(["white", "#69b3a2"])
+                        .domain([-1, 1]);
+
+                    var matrix = [
+                        { group: "Bike Racks", variable: "Bike Racks", value: 1 },
+                        { group: "Bike Racks", variable: "Car Crashes", value: d3_corr(bikeRacks, carCrashes) },
+                        { group: "Bike Racks", variable: "Gun Violence", value: d3_corr(bikeRacks, incidents) },
+                        { group: "Car Crashes", variable: "Bike Racks", value: d3_corr(carCrashes, bikeRacks) },
+                        { group: "Car Crashes", variable: "Car Crashes", value: 1 },
+                        { group: "Car Crashes", variable: "Gun Violence", value: d3_corr(carCrashes, incidents) },
+                        { group: "Gun Violence", variable: "Bike Racks", value: d3_corr(incidents, bikeRacks) },
+                        { group: "Gun Violence", variable: "Car Crashes", value: d3_corr(incidents, carCrashes) },
+                        { group: "Gun Violence", variable: "Gun Violence", value: 1 }
+                    ];
+
+                    // create a tooltip
+                    var tooltip = d3.select("body").append("div")
+                        .attr("class", "tooltip")
+                        .style("opacity", 0);
+
+                    // Three functions that change the tooltip when user hovers / moves / leaves a cell
+                    var mouseover = function (event, d) {
+                        tooltip.style("opacity", 1);
+                    }
+                    var mousemove = function (event, d) {
+                        tooltip
+                            .html("The exact value of<br>this cell is: " + d.value.toFixed(2))
+                            .style("left", (event.pageX + 10) + "px")
+                            .style("top", (event.pageY - 28) + "px");
+                    }
+                    var mouseleave = function (event, d) {
+                        tooltip.style("opacity", 0);
+                    }
+
+                    // Add the squares
+                    svg.selectAll()
+                        .data(matrix, function (d) { return d.group + ':' + d.variable; })
+                        .enter()
+                        .append("rect")
+                        .attr("x", function (d) { return x(d.group) })
+                        .attr("y", function (d) { return y(d.variable) })
+                        .attr("width", x.bandwidth())
+                        .attr("height", y.bandwidth())
+                        .style("fill", function (d) { return myColor(d.value) })
+                        .on("mouseover", mouseover)
+                        .on("mousemove", mousemove)
+                        .on("mouseleave", mouseleave);
+                }
+
+                function d3_corr(x, y) {
+                    var n = x.length;
+                    var meanX = d3.mean(x);
+                    var meanY = d3.mean(y);
+                    var numerator = d3.sum(x.map((d, i) => (d - meanX) * (y[i] - meanY)));
+                    var denominator = Math.sqrt(d3.sum(x.map(d => Math.pow(d - meanX, 2))) * d3.sum(y.map(d => Math.pow(d - meanY, 2))));
+                    return numerator / denominator;
+                }
+            </script>
+</body>
+
+</html>

@@ -12,6 +12,9 @@
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="stylesheet" href="style.css">
     <style>
+         body {
+            height: 100%;
+        }
         .tooltip {
             position: absolute;
             text-align: center;
@@ -23,12 +26,16 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             pointer-events: none;
+            color: black;
+            /* Added text color */
         }
+       
+
     </style>
 </head>
 
 <body>
-    <h2>Scatter Plots and Heatmap of Gun Violence, Bike Racks, and Car Crashes Per Chicago Ward</h2>
+    <h2>Scatter Plots and Heatmap of Gun Violence Incidents, Bike Racks, and Car Crashes Per Chicago Ward</h2>
     <button onclick="location.href='graphsChoice.html'">Go Back << </button>
             <div id="scatter1"></div>
             <div id="scatter2"></div>
@@ -201,7 +208,7 @@
                     // Build color scale
                     var myColor = d3.scaleLinear()
                         .range(["white", "#69b3a2"])
-                        .domain([-1, 1]);
+                        .domain([-1, 0, 1]);
 
                     var matrix = [
                         { group: "Bike Racks", variable: "Bike Racks", value: 1 },
@@ -226,7 +233,7 @@
                     }
                     var mousemove = function (event, d) {
                         tooltip
-                            .html("The exact value of<br>this cell is: " + d.value.toFixed(2))
+                            .html("The Correlation Value of<br>this cell is: " + d.value.toFixed(2))
                             .style("left", (event.pageX + 10) + "px")
                             .style("top", (event.pageY - 28) + "px");
                     }

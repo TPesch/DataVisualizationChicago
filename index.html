@@ -8,12 +8,165 @@
     <meta name="description" content="Data Visualization Landing Page">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="style.css">
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-cloud/1.2.5/d3.layout.cloud.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"
+        integrity="sha512-dfX5uYVXzyU8+KHqj8bjo7UkOdg18PaOtpa48djpNbZHwExddghZ+ZmzWT06R5v6NSk3ZUfsH6FNEDepLx9hPQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            /* align-items: center; */
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            overflow: hidden;
+        }
+
+
+    </style>
 </head>
 
 <body>
-    <h1>Data Visualization</h1>
-    <button onclick="location.href='map.html'">Load Map</button>
-    <button onclick="location.href='graphsChoice.html'">Load Graphs</button>
+    <div id="left-banner" class="side-container"></div>
+
+    <div class="center-content">
+        <h1>Data Visualization</h1>
+        <button onclick="location.href='map.html'">Load Map</button>
+        <button onclick="location.href='graphsChoice.html'">Load Graphs</button>
+    </div>
+
+    <div id="right-banner" class="side-container"></div>
+
+    <script>
+        // Function to load and process CSV data
+        function loadCSVData() {
+            fetch("CSV/Cleaned_Car_Crash_Data_2019.csv") // Adjust the path to your CSV file
+                .then(response => response.text())
+                .then(csvText => {
+                    Papa.parse(csvText, {
+                        header: true,
+                        complete: results => {
+                            const carCrashCauses = results.data.map(row => row['contributory_cause']).filter(Boolean);
+                            console.log("Car Crash Causes:", carCrashCauses); // Debug: check the causes
+                            generateWordCloud(carCrashCauses);
+                        }
+                    });
+                })
+                .catch(error => console.log("Error loading CSV file:", error));
+        }
+
+        // Function to generate word cloud
+        // Function to generate word cloud
+            function generateWordCloud(data) {
+                const words = data.join(" ").split(/\s+/).filter(Boolean);
+
+                const wordFrequency = words.reduce((count, word) => {
+                    word = word.toLowerCase();
+                    count[word] = (count[word] || 0) + 1;
+                    return count;
+                }, {});
+
+                const stopwords = ['the', 'and', 'to', 'of', 'a', 'in', 'for', 'on', 'with', 'at', 'by', 'an', 'be', 'this', 'that', 'or', 'as', 'it', 'from', 'is', 'was'];
+                const filteredWordFrequency = Object.entries(wordFrequency)
+                    .filter(([word, freq]) => !stopwords.includes(word))
+                    .reduce((acc, [word, freq]) => {
+                        acc[word] = freq;
+                        return acc;
+                    }, {});
+
+                const wordArray = Object.keys(filteredWordFrequency).map(word => {
+                    return { text: word, size: filteredWordFrequency[word] };
+                });
+
+                wordArray.sort((a, b) => b.size - a.size);
+
+                const bannerWidth = window.innerWidth * 0.2;
+                const bannerHeight = window.innerHeight;
+
+                generateBannerWordCloud("#left-banner", wordArray, bannerWidth, bannerHeight);
+                generateBannerWordCloud("#right-banner", wordArray, bannerWidth, bannerHeight);
+            }
+
+            // Function to generate word cloud for a banner
+            function generateBannerWordCloud(selector, words, width, height) {
+                d3.select(selector).selectAll("*").remove();
+
+                const svg = d3.select(selector).append("svg")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .append("g")
+                    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+                const layout = d3.layout.cloud()
+                    .size([width, height])
+                    .words(words)
+                    .padding(2)
+                    .rotate(() => Math.random() * 60 - 30)
+                    .fontSize(d => Math.sqrt(d.size) * 3)
+                    .on("end", draw);
+
+                layout.start();
+
+                function draw(words) {
+                    svg.append("g")
+                        .attr("transform", "translate(0,0)")
+                        .selectAll("text")
+                        .data(words)
+                        .enter().append("text")
+                        .style("font-size", d => Math.sqrt(d.size) * 3 + "px")
+                        .style("fill", "#FFFFFF")
+                        .attr("text-anchor", "middle")
+                        .style("font-family", "Impact")
+                        .attr("transform", d => "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")")
+                        .text(d => d.text);
+                }
+            }
+
+        // Function to generate word cloud for a banner
+        function generateBannerWordCloud(selector, words, width, height) {
+            // Clear existing SVG (if any)
+            d3.select(selector).selectAll("*").remove();
+
+            // Append the svg object to the banner
+            const svg = d3.select(selector).append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+            // Constructs a new cloud layout instance for the banner
+            const layout = d3.layout.cloud()
+                .size([width, height])
+                .words(words)
+                .padding(5) // Space between words
+                .rotate(() => Math.random() * 90 - 45) // Rotation angle in degrees
+                .fontSize(d => Math.sqrt(d.size) * 5) // Adjust the font size scaling for banners
+                .on("end", draw);
+
+            layout.start();
+
+            // Function to draw the words
+            function draw(words) {
+                svg.append("g")
+                    .attr("transform", "translate(0,0)")
+                    .selectAll("text")
+                    .data(words)
+                    .enter().append("text")
+                    .style("font-size", d => Math.sqrt(d.size) * 5 + "px") // Adjust font size for banners
+                    .style("fill", "#FFFFFF") // White text
+                    .attr("text-anchor", "middle")
+                    .style("font-family", "Impact")
+                    .attr("transform", d => "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")")
+                    .text(d => d.text);
+            }
+        }
+
+        // Load the CSV data and generate the word cloud on page load
+        document.addEventListener("DOMContentLoaded", loadCSVData);
+    </script>
 </body>
 
 </html>

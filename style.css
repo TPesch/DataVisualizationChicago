@@ -4,7 +4,7 @@ body {
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #71b7e6, #9b59b6);
+    background: linear-gradient(135deg, #e6a95a, #9b59b6);
     color: white;
     display: flex;
     flex-direction: column;
@@ -76,14 +76,17 @@ button:hover {
     background-color: #2c3e50;
     transform: translateY(-5px);
 }
-                .side-container {
-                    width: 20%;
-                    height: 100%;
-                    position: absolute;
-                    top: 0;
-                    background-color: #512a9b13;
-                    overflow: hidden;
-                }
+                                .side-container {
+                                    width: 20%;
+                                    height: 100%;
+                                    position: absolute;
+                                    top: 0;
+                                    bottom: 0;
+                                    background-color: #512a9b13;
+                                    overflow: hidden;
+                                    z-index: 0;
+                                    /* Ensure it is behind the center content */}
+
         
                 #left-banner {
                     left: 0;
@@ -92,9 +95,11 @@ button:hover {
                 #right-banner {
                     right: 0;
                 }
-        
                 .center-content {
-                    width: 90%;
+                    width: 60%;
+                    /* Adjusted width to 60% to leave space for side containers */
                     text-align: center;
                     z-index: 1;
+                    margin: auto;
+                    /* Center the content considering the side containers */
                 }
